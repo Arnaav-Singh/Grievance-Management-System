@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign In - Grievance Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 animate-up">
+        <div class="card-lifestyle p-4 p-lg-5">
+            <div class="text-center mb-5">
+                <div class="bg-primary text-white p-3 rounded-4 d-inline-flex align-items-center justify-content-center shadow-lg mb-4"
+                    style="width: 60px; height: 60px;">
+                    <i class="fas fa-lock fs-3"></i>
+                </div>
+                <h2 class="fw-bold text-dark">Welcome Back</h2>
+                <p class="text-muted">Enter your credentials to access your portal</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form|crispy }}
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="submit" class="btn btn-primary-glow btn-pill py-3 px-4 fw-bold">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-5">
+                <p class="text-muted small">Don't have an account? <a href="{% url 'signup' %}"
+                        class="text-primary fw-bold text-decoration-none">Create Account</a></p>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'dashboard' %}" class="text-muted small text-decoration-none hover-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Homepage
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

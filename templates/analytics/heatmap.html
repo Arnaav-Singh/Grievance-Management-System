@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Operational Analytics - WPL Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5 animate-up">
+    <div class="col-md-8">
+        <h1 class="fw-bold text-dark mb-1">Operational Analytics</h1>
+        <p class="text-muted fs-5 mb-0">Visualizing grievance dispersion and departmental load.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5 animate-up" style="animation-delay: 0.1s;">
+    <!-- Location Heatmap -->
+    <div class="col-md-8">
+        <div class="card-lifestyle h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0"><i class="fas fa-satellite-dish text-primary me-2"></i>Concentration Heatmap</h5>
+                <span class="badge bg-light text-primary border px-3">By Geographical Node</span>
+            </div>
+            <div style="height: 350px;">
+                <canvas id="locationChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Category Distribution -->
+    <div class="col-md-4">
+        <div class="card-lifestyle h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold text-dark mb-0"><i class="fas fa-adjust text-primary me-2"></i>Department Load</h5>
+            </div>
+            <div style="height: 350px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-lifestyle border-0 shadow-sm animate-up" style="animation-delay: 0.2s;">
+    <div class="card-body p-4 p-lg-5 bg-primary bg-opacity-10 border-start border-4 border-primary">
+        <div class="d-flex align-items-start">
+            <div class="stat-icon bg-primary text-white mb-0 me-4 shadow-lg" style="width: 60px; height: 60px; font-size: 24px;">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold text-dark mb-2">Automated Operational Insights</h4>
+                <p class="text-muted fs-6 mb-4">Our systems have analyzed the current dataset and identified the following operational trends:</p>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
+                            <i class="fas fa-location-arrow text-danger me-3 fs-4"></i>
+                            <div>
+                                <small class="text-muted d-block">Critical Node</small>
+                                <span class="fw-bold text-dark" id="top-loc">Analyzing Data...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
+                            <i class="fas fa-tags text-warning me-3 fs-4"></i>
+                            <div>
+                                <small class="text-muted d-block">High-Volume Category</small>
+                                <span class="fw-bold text-dark" id="top-cat">Analyzing Data...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ labels|safe }};
+    const counts = {{ counts|safe }};
+    const catLabels = {{ cat_labels|safe }};
+    const catCounts = {{ cat_counts|safe }};
+
+    // Chart Global Defaults
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+    Chart.defaults.color = "#6b7280";
+
+    // Location Bar Chart
+    const ctxLoc = document.getElementById('locationChart').getContext('2d');
+    new Chart(ctxLoc, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Cases',
+                data: counts,
+                backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                hoverBackgroundColor: 'rgba(79, 70, 229, 1)',
+                borderRadius: 12,
+                barThickness: 32,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    padding: 12,
+                    backgroundColor: '#111827',
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#f3f4f6', drawBorder: false },
+                    ticks: { padding: 8 }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { padding: 8 }
+                }
+            }
+        }
+    });
+
+    // Category Doughnut Chart
+    const ctxCat = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catCounts,
+                backgroundColor: [
+                    '#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#6b7280'
+                ],
+                borderWidth: 8,
+                borderColor: '#ffffff',
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { 
+                    position: 'bottom',
+                    labels: { padding: 25, usePointStyle: true, pointStyle: 'circle' }
+                },
+                tooltip: {
+                    padding: 12,
+                    backgroundColor: '#111827',
+                    bodyFont: { size: 13 },
+                    displayColors: true
+                }
+            }
+        }
+    });
+
+    // Populate Insights
+    if (labels.length > 0) document.getElementById('top-loc').innerText = labels[0];
+    if (catLabels.length > 0) document.getElementById('top-cat').innerText = catLabels[0];
+</script>
+{% endblock %}

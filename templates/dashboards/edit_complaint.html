@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Case - WPL Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh; padding-bottom: 50px;">
+    <div class="col-md-10 animate-up">
+        <div class="card-lifestyle p-4 p-lg-5">
+            <div class="d-flex align-items-center mb-5">
+                <div class="bg-warning text-dark p-3 rounded-4 d-inline-flex align-items-center justify-content-center shadow-lg me-4" style="width: 60px; height: 60px;">
+                    <i class="fas fa-edit fs-3"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold text-dark mb-1">Refine Grievance</h2>
+                    <p class="text-muted mb-0">Update your complaint details for Case #{{ complaint.id }}</p>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group mb-0">
+                            {{ form.title|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-0">
+                            {{ form.category|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group mb-0">
+                            {{ form.location|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group mb-0">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-light btn-pill px-4">Cancel Changes</a>
+                    <button type="submit" class="btn btn-primary-glow btn-pill px-5 py-3 fw-bold">
+                        <i class="fas fa-save me-2"></i>Apply Updates
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

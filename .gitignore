@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+
+# MacOS
+.DS_Store
+
+# Artifacts & Recordings
+*.webp
+*.mp4
+*.png
+brain/
+scratch/
+task.md
+implementation_plan.md
+walkthrough.md

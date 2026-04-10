@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Leaderboard - WPL Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5 animate-up">
+    <div class="col-md-8">
+        <h1 class="fw-bold text-dark mb-1">Administrative Performance</h1>
+        <p class="text-muted fs-5 mb-0">Ranking based on resolution consistency and SLA compliance.</p>
+    </div>
+</div>
+
+<div class="card-lifestyle border-0 shadow-sm animate-up" style="animation-delay: 0.1s;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead class="text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Position</th>
+                        <th>Administrator</th>
+                        <th>Operational Area</th>
+                        <th>Resolution Score</th>
+                        <th>Workload</th>
+                        <th class="text-end pe-4">Success Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in admins %}
+                    <tr>
+                        <td class="ps-4">
+                            {% if forloop.counter == 1 %}
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                            {% elif forloop.counter == 2 %}
+                                <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px;">
+                                    2
+                                </div>
+                            {% elif forloop.counter == 3 %}
+                                <div class="bg-bronze bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px; background-color: rgba(205, 127, 50, 0.1); color: #cd7f32;">
+                                    3
+                                </div>
+                            {% else %}
+                                <div class="text-muted ps-3 fw-bold">{{ forloop.counter }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ admin.username }}&background=4f46e5&color=fff" class="rounded-circle me-3 shadow-sm" width="44" height="44">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ admin.username|title }}</div>
+                                    <span class="badge bg-light text-primary text-uppercase" style="font-size: 10px;">{{ admin.role }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark small text-uppercase mb-1">{{ admin.department|default:"Global Ops" }}</div>
+                            <small class="text-muted">Primary Domain</small>
+                        </td>
+                        <td>
+                            <div class="fs-5 fw-bold text-success">{{ admin.resolved_count }}</div>
+                            <small class="text-muted">Cases Resolved</small>
+                        </td>
+                        <td>
+                            <div class="fs-5 fw-bold text-dark">{{ admin.total_assigned }}</div>
+                            <small class="text-muted">Lifetime Assigned</small>
+                        </td>
+                        <td class="text-end pe-4">
+                            {% widthratio admin.resolved_count admin.total_assigned 100 as rate %}
+                            <div class="d-flex align-items-center justify-content-end">
+                                <div class="me-3 text-end">
+                                    <div class="fw-bold text-dark">{{ rate }}%</div>
+                                    <small class="text-muted small">Efficiency</small>
+                                </div>
+                                <div class="progress" style="width: 80px; height: 8px; border-radius: 4px;">
+                                    <div class="progress-bar bg-primary rounded-pill" style="width: {{ rate }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">No operational performance metrics trackable yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Console - WPL Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5 animate-up">
+    <div class="col-md-9">
+        <h1 class="fw-bold text-dark mb-1">Management Console</h1>
+        <p class="text-muted fs-5 mb-0">Oversee, track, and resolve system-wide grievances.</p>
+    </div>
+    <div class="col-md-3 text-md-end mt-3 mt-md-0">
+        <div class="btn-group p-1 bg-white rounded-pill shadow-sm">
+            <a href="?overdue=1" class="btn {% if overdue == '1' %}btn-danger{% else %}btn-white{% endif %} btn-pill btn-sm px-4">Overdue</a>
+            <a href="{% url 'admin_dashboard' %}" class="btn {% if not overdue %}btn-primary{% else %}btn-white{% endif %} btn-pill btn-sm px-4">All Cases</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5 g-4 animate-up" style="animation-delay: 0.1s;">
+    <div class="col-md-3">
+        <div class="card-lifestyle p-4 border-start border-4 border-primary">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Total Active</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ stats.total }}</h2>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary mb-0 shadow-none">
+                    <i class="fas fa-database"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-lifestyle p-4 border-start border-4 border-danger">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Action Needed</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ stats.pending }}</h2>
+                </div>
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger mb-0 shadow-none">
+                    <i class="fas fa-fire-alt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-lifestyle p-4 border-start border-4 border-success">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Completed</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ stats.resolved }}</h2>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success mb-0 shadow-none">
+                    <i class="fas fa-award"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-lifestyle p-4 border-start border-4 border-dark">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted fw-bold small text-uppercase mb-1">Escalations</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ stats.escalated }}</h2>
+                </div>
+                <div class="stat-icon bg-dark bg-opacity-10 text-dark mb-0 shadow-none">
+                    <i class="fas fa-level-up-alt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refined Filters -->
+<div class="card-lifestyle border-0 shadow-sm mb-5 animate-up" style="animation-delay: 0.2s;">
+    <div class="card-body p-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold small text-muted text-uppercase">Keyword Search</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0 shadow-none fs-6" placeholder="Find by title or content..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-muted text-uppercase">Department</label>
+                <select name="category" class="form-select form-select-lg shadow-none fs-6">
+                    <option value="">All Streams</option>
+                    {% for cat_val, cat_name in categories %}
+                        <option value="{{ cat_val }}" {% if selected_category == cat_val %}selected{% endif %}>{{ cat_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold small text-muted text-uppercase">Lifecycle Status</label>
+                <select name="status" class="form-select form-select-lg shadow-none fs-6">
+                    <option value="">Any Status</option>
+                    <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending Tasks</option>
+                    <option value="In Progress" {% if selected_status == 'In Progress' %}selected{% endif %}>In Active Work</option>
+                    <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved & Closed</option>
+                    <option value="Escalated" {% if selected_status == 'Escalated' %}selected{% endif %}>Escalated Cases</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary-glow btn-pill py-3 fw-bold">Apply Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card-lifestyle border-0 shadow-sm animate-up" style="animation-delay: 0.3s;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead class="text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Identifier</th>
+                        <th>Student Information</th>
+                        <th>Core Grievance</th>
+                        <th>Assigned Officer</th>
+                        <th>SLA Compliance</th>
+                        <th>Modern Status</th>
+                        <th class="text-end pe-4">Lifecycle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for complaint in complaints %}
+                    <tr class="{% if complaint.status == 'Escalated' %}bg-light bg-opacity-50{% endif %}">
+                        <td class="ps-4">
+                            <span class="text-muted fw-medium">#{{ complaint.id }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ complaint.user.username }}&background=f3f4f6&color=111827" class="rounded-circle me-3" width="40" height="40">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ complaint.user.username|title }}</div>
+                                    <small class="text-muted text-uppercase small" style="font-size: 10px;">{{ complaint.location }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark mb-1">{{ complaint.title|truncatechars:40 }}</div>
+                            <span class="badge bg-light text-primary border border-primary border-opacity-10">{{ complaint.category }}</span>
+                        </td>
+                        <td>
+                            {% if complaint.assigned_to %}
+                                <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 d-inline-flex border">
+                                    <img src="https://ui-avatars.com/api/?name={{ complaint.assigned_to.username }}&background=4f46e5&color=fff" class="rounded-circle me-2" width="20" height="20">
+                                    <span class="small fw-bold pe-1">{{ complaint.assigned_to.username|title }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small italic">Queueing...</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if complaint.status != 'Resolved' %}
+                                <div class="countdown fw-bold text-primary" data-deadline="{{ complaint.deadline|date:'c' }}" style="font-size: 13px;">
+                                    -
+                                </div>
+                                <div style="font-size: 10px;" class="text-muted text-uppercase fw-bold">{{ complaint.deadline|date:"M d, H:i" }}</div>
+                            {% else %}
+                                <div class="text-success fw-bold" style="font-size: 13px;"><i class="fas fa-check-circle me-1"></i>Compliant</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if complaint.status == 'Pending' %}
+                                <span class="badge status-badge badge-soft-pending">Pending</span>
+                            {% elif complaint.status == 'In Progress' %}
+                                <span class="badge status-badge badge-soft-progress">Progress</span>
+                            {% elif complaint.status == 'Resolved' %}
+                                <span class="badge status-badge badge-soft-resolved">Resolved</span>
+                            {% elif complaint.status == 'Escalated' %}
+                                <span class="badge status-badge badge-soft-escalated">Escalated (L{{ complaint.escalation_level }})</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-premium btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#updateModal{{ complaint.id }}">
+                                Update Case
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-search fa-3x text-muted opacity-25 mb-4"></i>
+                            <h5 class="text-muted fw-bold">No Records Found</h5>
+                            <p class="text-muted small">Try adjusting your filters or search keywords.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if complaints.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4 pb-4">
+            <ul class="pagination justify-content-center gap-2">
+                {% if complaints.has_previous %}
+                    <li class="page-item"><a class="page-link border-0 shadow-sm rounded-3" href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo;</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link border-0 shadow-sm rounded-3 px-3">Page {{ complaints.number }} of {{ complaints.paginator.num_pages }}</span></li>
+                {% if complaints.has_next %}
+                    <li class="page-item"><a class="page-link border-0 shadow-sm rounded-3" href="?page={{ complaints.next_page_number }}{% if query %}&q={{ query }}{% endif %}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals outside loop -->
+{% for complaint in complaints %}
+    <div class="modal fade" id="updateModal{{ complaint.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-0 bg-light p-4">
+                    <h5 class="modal-title fw-bold">Status Update: Case #{{ complaint.id }}</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{% url 'update_complaint_status' complaint.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body p-4 p-lg-5">
+                        <div class="row mb-4 g-4">
+                            <div class="col-md-6">
+                                <h6 class="text-muted text-uppercase fw-bold small mb-3">Core Information</h6>
+                                <div class="p-4 bg-light rounded-4 border">
+                                    <div class="mb-3">
+                                        <small class="d-block text-muted">Title</small>
+                                        <span class="fw-bold">{{ complaint.title }}</span>
+                                    </div>
+                                    <div>
+                                        <small class="d-block text-muted">Description</small>
+                                        <p class="small mb-0 text-dark">{{ complaint.description|truncatechars:200 }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 border-start-md ps-md-4">
+                                <h6 class="text-muted text-uppercase fw-bold small mb-3">Case Logistics</h6>
+                                <div class="d-flex flex-column gap-2 small">
+                                    <div class="d-flex justify-content-between p-2 bg-light rounded">
+                                        <span class="text-muted">Student</span>
+                                        <span class="fw-bold">{{ complaint.user.username }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 bg-light rounded">
+                                        <span class="text-muted">Department</span>
+                                        <span class="fw-bold">{{ complaint.category }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 bg-light rounded">
+                                        <span class="text-muted">Location</span>
+                                        <span class="fw-bold text-primary">{{ complaint.location }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between p-2 bg-light rounded">
+                                        <span class="text-muted">Current Assignee</span>
+                                        <span class="fw-bold">{{ complaint.assigned_to.username|default:"Unassigned" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark mb-2">Target Status</label>
+                                <select name="status" class="form-select form-select-lg shadow-sm rounded-3 border-light-subtle">
+                                    <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="In Progress" {% if complaint.status == 'In Progress' %}selected{% endif %}>Active Resolution</option>
+                                    <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Case Resolved</option>
+                                    <option value="Escalated" {% if complaint.status == 'Escalated' %}selected{% endif %}>Escalate Issue</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark mb-2">Resolution Remark</label>
+                                <textarea name="admin_remark" class="form-control form-control-lg shadow-sm rounded-3 border-light-subtle" rows="3" placeholder="Explain the resolution or progress status...">{{ complaint.admin_remark|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 bg-light">
+                        <button type="button" class="btn btn-light btn-pill px-4" data-bs-dismiss="modal">Discard</button>
+                        <button type="submit" class="btn btn-primary-glow btn-pill px-5 fw-bold">Commit Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateCountdowns() {
+        $('.countdown').each(function() {
+            const deadline = new Date($(this).data('deadline')).getTime();
+            const now = new Date().getTime();
+            const distance = deadline - now;
+
+            if (distance < 0) {
+                $(this).html('<span class="text-danger fw-black"><i class="fas fa-bolt me-1"></i>OVERDUE</span>');
+            } else {
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                let timeStr = hours + "h " + minutes + "m " + seconds + "s";
+                $(this).html('<i class="far fa-clock me-1 text-primary"></i>' + timeStr);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
+    });
+</script>
+{% endblock %}

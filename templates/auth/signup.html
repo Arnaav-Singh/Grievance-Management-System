@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Account - Grievance Portal {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh; padding: 40px 0;">
+    <div class="col-md-7 animate-up">
+        <div class="card-lifestyle p-4 p-lg-5">
+            <div class="text-center mb-5">
+                <div class="bg-primary text-white p-3 rounded-4 d-inline-flex align-items-center justify-content-center shadow-lg mb-4"
+                    style="width: 60px; height: 60px;">
+                    <i class="fas fa-user-plus fs-3"></i>
+                </div>
+                <h2 class="fw-bold text-dark">Join the Community</h2>
+                <p class="text-muted">Fill in the details below to create your official account</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form|crispy }}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="submit" class="btn btn-primary-glow btn-pill py-3 px-4 fw-bold">
+                        <i class="fas fa-check-circle me-2"></i>Create My Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-5">
+                <p class="text-muted small">Already part of the system? <a href="{% url 'login' %}"
+                        class="text-primary fw-bold text-decoration-none">Sign In instead</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
