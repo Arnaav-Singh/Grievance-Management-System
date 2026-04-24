@@ -118,7 +118,7 @@
                         <th>Student Information</th>
                         <th>Core Grievance</th>
                         <th>Assigned Officer</th>
-                        <th>SLA Compliance</th>
+                        <th>Escalation Level</th>
                         <th>Modern Status</th>
                         <th class="text-end pe-4">Lifecycle</th>
                     </tr>
@@ -153,13 +153,12 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if complaint.status != 'Resolved' %}
-                                <div class="countdown fw-bold text-primary" data-deadline="{{ complaint.deadline|date:'c' }}" style="font-size: 13px;">
-                                    -
-                                </div>
-                                <div style="font-size: 10px;" class="text-muted text-uppercase fw-bold">{{ complaint.deadline|date:"M d, H:i" }}</div>
-                            {% else %}
-                                <div class="text-success fw-bold" style="font-size: 13px;"><i class="fas fa-check-circle me-1"></i>Compliant</div>
+                            {% if complaint.escalation_level == 0 %}
+                                <span class="text-muted small fw-bold">Standard</span>
+                            {% elif complaint.escalation_level == 1 %}
+                                <span class="text-warning small fw-bold"><i class="fas fa-chevron-up me-1"></i>HOD</span>
+                            {% elif complaint.escalation_level == 2 %}
+                                <span class="text-danger small fw-bold"><i class="fas fa-angle-double-up me-1"></i>Dean</span>
                             {% endif %}
                         </td>
                         <td>
@@ -283,32 +282,4 @@
     </div>
 {% endfor %}
 
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    function updateCountdowns() {
-        $('.countdown').each(function() {
-            const deadline = new Date($(this).data('deadline')).getTime();
-            const now = new Date().getTime();
-            const distance = deadline - now;
-
-            if (distance < 0) {
-                $(this).html('<span class="text-danger fw-black"><i class="fas fa-bolt me-1"></i>OVERDUE</span>');
-            } else {
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                
-                let timeStr = hours + "h " + minutes + "m " + seconds + "s";
-                $(this).html('<i class="far fa-clock me-1 text-primary"></i>' + timeStr);
-            }
-        });
-    }
-
-    $(document).ready(function() {
-        updateCountdowns();
-        setInterval(updateCountdowns, 1000);
-    });
-</script>
 {% endblock %}

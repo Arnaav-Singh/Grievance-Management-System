@@ -10,7 +10,7 @@ from .utils import check_and_escalate_complaints
 import json
 
 def is_admin(user):
-    return user.role in ['admin', 'staff', 'hod', 'dean']
+    return user.is_authenticated and user.role in ['admin', 'staff', 'hod', 'dean']
 
 def is_student(user):
     return user.role == 'student'
@@ -64,7 +64,6 @@ def submit_complaint(request):
 @login_required
 @user_passes_test(is_admin)
 def admin_dashboard(request):
-    check_and_escalate_complaints()
     query = request.GET.get('q', '')
     category = request.GET.get('category', '')
     status = request.GET.get('status', '')
@@ -122,8 +121,10 @@ def admin_dashboard(request):
     })
 
 @login_required
-@user_passes_test(is_admin)
 def admin_leaderboard(request):
+    if not is_admin(request.user):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Access Denied: Only administrators can view the leaderboard.")
     # Calculate performance metrics
     # average_resolution_time calculation: simplified as (updated_at - created_at) for Resolved complaints
     # In SQLite, duration math is tricky, so we'll do it in Python if needed or use ExpressionWrapper
@@ -187,6 +188,41 @@ def delete_complaint(request, pk):
     return redirect('student_dashboard')
 
 @login_required
+@user_passes_test(is_student)
+def escalate_complaint(request, pk):
+    complaint = get_object_or_404(Complaint, pk=pk, user=request.user)
+    if complaint.status == 'Resolved':
+        messages.error(request, "Resolved complaints cannot be escalated.")
+        return redirect('student_dashboard')
+    
+    if complaint.escalation_level < 2:
+        complaint.escalation_level += 1
+        complaint.status = 'Escalated'
+        
+        # Hierarchy: 1 -> HOD, 2 -> Dean
+        new_role = 'hod' if complaint.escalation_level == 1 else 'dean'
+        
+        # Find potential assignees in the department
+        eligible_admins = User.objects.filter(department=complaint.category, role=new_role)
+        if not eligible_admins.exists():
+            eligible_admins = User.objects.filter(role=new_role)
+        
+        if eligible_admins.exists():
+            best_admin = eligible_admins.annotate(
+                active_count=Count('assigned_complaints', filter=Q(assigned_complaints__status__in=['Pending', 'In Progress', 'Escalated']))
+            ).order_by('active_count').first()
+            complaint.assigned_to = best_admin
+            complaint.save()
+            messages.success(request, f"Complaint escalated to {new_role.upper()}. Assigned to: {best_admin.username}")
+        else:
+            complaint.save()
+            messages.warning(request, f"Complaint escalated to {new_role.upper()}, but no specific officer was found for assignment.")
+    else:
+        messages.info(request, "This complaint is already at the maximum escalation level (Dean).")
+        
+    return redirect('student_dashboard')
+
+@login_required
 @user_passes_test(is_admin)
 def update_complaint_status(request, pk):
     complaint = get_object_or_404(Complaint, pk=pk)
@@ -197,3 +233,47 @@ def update_complaint_status(request, pk):
             messages.success(request, f"Complaint #{pk} updated successfully!")
             return redirect('admin_dashboard')
     return redirect('admin_dashboard')
+@login_required
+@user_passes_test(lambda u: u.role == 'admin' or u.is_superuser)
+def manage_users(request):
+    query = request.GET.get('q', '')
+    role = request.GET.get('role', '')
+    department = request.GET.get('department', '')
+    
+    users = User.objects.all().order_by('username')
+    
+    if query:
+        users = users.filter(Q(username__icontains=query) | Q(email__icontains=query))
+    if role:
+        users = users.filter(role=role)
+    if department:
+        users = users.filter(department=department)
+        
+    paginator = Paginator(users, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'users': page_obj,
+        'query': query,
+        'selected_role': role,
+        'selected_department': department,
+        'roles': User.ROLE_CHOICES,
+        'departments': User.DEPARTMENT_CHOICES,
+    }
+    return render(request, 'dashboards/manage_users.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.role == 'admin' or u.is_superuser)
+def update_user_role(request, pk):
+    user_to_update = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        role = request.POST.get('role')
+        department = request.POST.get('department')
+        if role:
+            user_to_update.role = role
+        if department:
+            user_to_update.department = department
+        user_to_update.save()
+        messages.success(request, f"User {user_to_update.username} updated successfully.")
+    return redirect('manage_users')

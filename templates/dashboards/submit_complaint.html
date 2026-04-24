@@ -35,12 +35,17 @@
                             {{ form.title|as_crispy_field }}
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group mb-0">
                             {{ form.category|as_crispy_field }}
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            {{ form.gender|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group mb-0">
                             {{ form.location|as_crispy_field }}
                         </div>
@@ -62,4 +67,52 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const genderSelect = document.getElementById('id_gender');
+    const locationSelect = document.getElementById('id_location');
+    
+    // Store all options to restore them later
+    const originalOptions = Array.from(locationSelect.querySelectorAll('optgroup, option'));
+    
+    function filterLocations() {
+        const gender = genderSelect.value;
+        
+        // Show/Hide based on gender
+        const optgroups = locationSelect.getElementsByTagName('optgroup');
+        for (let group of optgroups) {
+            if (gender === 'Boys') {
+                if (group.label === 'Boys Hostels' || group.label === 'Other Locations') {
+                    group.hidden = false;
+                    group.disabled = false;
+                } else {
+                    group.hidden = true;
+                    group.disabled = true;
+                }
+            } else if (gender === 'Girls') {
+                if (group.label === 'Girls Hostels' || group.label === 'Other Locations') {
+                    group.hidden = false;
+                    group.disabled = false;
+                } else {
+                    group.hidden = true;
+                    group.disabled = true;
+                }
+            } else {
+                group.hidden = false;
+                group.disabled = false;
+            }
+        }
+        
+        // If current selection is now hidden/disabled, reset to 'Other'
+        const selectedOption = locationSelect.options[locationSelect.selectedIndex];
+        if (selectedOption && selectedOption.parentElement && (selectedOption.parentElement.hidden || selectedOption.parentElement.disabled)) {
+            locationSelect.value = 'Other';
+        }
+    }
+    
+    genderSelect.addEventListener('change', filterLocations);
+    filterLocations(); // Initial run
+});
+</script>
 {% endblock %}

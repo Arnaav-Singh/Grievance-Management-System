@@ -12,9 +12,12 @@ urlpatterns = [
     path('student/complaint/submit/', views.submit_complaint, name='submit_complaint'),
     path('student/complaint/edit/<int:pk>/', views.edit_complaint, name='edit_complaint'),
     path('student/complaint/delete/<int:pk>/', views.delete_complaint, name='delete_complaint'),
+    path('student/complaint/escalate/<int:pk>/', views.escalate_complaint, name='escalate_complaint'),
     
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/complaint/update/<int:pk>/', views.update_complaint_status, name='update_complaint_status'),
     path('admin/leaderboard/', views.admin_leaderboard, name='leaderboard'),
     path('admin/analytics/', views.complaint_analytics, name='analytics'),
+    path('admin/users/', views.manage_users, name='manage_users'),
+    path('admin/users/update/<int:pk>/', views.update_user_role, name='update_user_role'),
 ]

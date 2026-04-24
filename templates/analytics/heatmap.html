@@ -37,41 +37,6 @@
     </div>
 </div>
 
-<div class="card-lifestyle border-0 shadow-sm animate-up" style="animation-delay: 0.2s;">
-    <div class="card-body p-4 p-lg-5 bg-primary bg-opacity-10 border-start border-4 border-primary">
-        <div class="d-flex align-items-start">
-            <div class="stat-icon bg-primary text-white mb-0 me-4 shadow-lg" style="width: 60px; height: 60px; font-size: 24px;">
-                <i class="fas fa-brain"></i>
-            </div>
-            <div>
-                <h4 class="fw-bold text-dark mb-2">Automated Operational Insights</h4>
-                <p class="text-muted fs-6 mb-4">Our systems have analyzed the current dataset and identified the following operational trends:</p>
-                
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
-                            <i class="fas fa-location-arrow text-danger me-3 fs-4"></i>
-                            <div>
-                                <small class="text-muted d-block">Critical Node</small>
-                                <span class="fw-bold text-dark" id="top-loc">Analyzing Data...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
-                            <i class="fas fa-tags text-warning me-3 fs-4"></i>
-                            <div>
-                                <small class="text-muted d-block">High-Volume Category</small>
-                                <span class="fw-bold text-dark" id="top-cat">Analyzing Data...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -162,9 +127,5 @@
             }
         }
     });
-
-    // Populate Insights
-    if (labels.length > 0) document.getElementById('top-loc').innerText = labels[0];
-    if (catLabels.length > 0) document.getElementById('top-cat').innerText = catLabels[0];
 </script>
 {% endblock %}

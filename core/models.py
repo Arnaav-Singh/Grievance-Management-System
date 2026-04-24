@@ -31,13 +31,39 @@ class Complaint(models.Model):
         ('Other', 'Other'),
     )
     LOCATION_CHOICES = (
-        ('Hostel A', 'Hostel A'),
-        ('Hostel B', 'Hostel B'),
-        ('Library', 'Library'),
-        ('Lab 1', 'Lab 1'),
-        ('Main Gate', 'Main Gate'),
-        ('Cafeteria', 'Cafeteria'),
-        ('Other', 'Other'),
+        ('Boys Hostels', (
+            ('Block 1 (Boys)', 'Block 1'),
+            ('Block 2 (Boys)', 'Block 2'),
+            ('Block 3 (Boys)', 'Block 3'),
+            ('Block 4 (Boys)', 'Block 4'),
+            ('Block 5 (Boys)', 'Block 5'),
+            ('Block 6 (Boys)', 'Block 6'),
+            ('Block 7 (Boys)', 'Block 7'),
+            ('Block 8 (Boys)', 'Block 8'),
+            ('Block 9 (Boys)', 'Block 9'),
+            ('Block 10 (Boys)', 'Block 10'),
+            ('Block 14 (Boys)', 'Block 14'),
+            ('Block 15 (Boys)', 'Block 15'),
+            ('Block 16 (Boys)', 'Block 16'),
+            ('Block 17 (Boys)', 'Block 17'),
+            ('Block 18 (Boys)', 'Block 18'),
+            ('Block 19 (Boys)', 'Block 19'),
+            ('Block 20 (Boys)', 'Block 20'),
+        )),
+        ('Girls Hostels', (
+            ('Block 11 (Girls)', 'Block 11'),
+            ('Block 12 (Girls)', 'Block 12'),
+            ('Block 13 (Girls)', 'Block 13'),
+            ('Block 21 (Girls)', 'Block 21'),
+            ('Block 22 (Girls)', 'Block 22'),
+        )),
+        ('Other Locations', (
+            ('Library', 'Library'),
+            ('Lab 1', 'Lab 1'),
+            ('Main Gate', 'Main Gate'),
+            ('Cafeteria', 'Cafeteria'),
+            ('Other', 'Other'),
+        )),
     )
     STATUS_CHOICES = (
         ('Pending', 'Pending'),
@@ -46,9 +72,15 @@ class Complaint(models.Model):
         ('Escalated', 'Escalated'),
     )
     
+    GENDER_CHOICES = (
+        ('Boys', 'Boys'),
+        ('Girls', 'Girls'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submitted_complaints')
     title = models.CharField(max_length=255)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Other')
     location = models.CharField(max_length=50, choices=LOCATION_CHOICES, default='Other')
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -64,10 +96,6 @@ class Complaint(models.Model):
     def save(self, *args, **kwargs):
         is_new = not self.id
         if is_new:
-            # Set initial deadline (48 hours)
-            if not self.deadline:
-                self.deadline = timezone.now() + timedelta(hours=48)
-            
             # Auto-routing logic
             if not self.assigned_to:
                 eligible_admins = User.objects.filter(department=self.category, role__in=['staff', 'hod', 'dean', 'admin'])
